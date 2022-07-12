@@ -67,6 +67,24 @@ class ScopeClosingBraceSniff implements Sniff
         $lastContent = $phpcsFile->findPrevious([T_INLINE_HTML, T_WHITESPACE, T_OPEN_TAG], ($scopeEnd - 1), $scopeStart, true);
         for ($lineStart = $scopeEnd; $tokens[$lineStart]['column'] > 1; $lineStart--);
 
+        // Allow opening and closing brackets with empty body on the same line for constructors
+        if ($tokens[$stackPtr]['code'] === T_FUNCTION
+            && $phpcsFile->getDeclarationName($stackPtr) === '__construct'
+            && $lastContent === $scopeStart
+        ) {
+            $whitespaceBetween = $phpcsFile->findPrevious([T_WHITESPACE], ($scopeEnd - 1), $scopeStart);
+
+            if ($whitespaceBetween) {
+                $error = 'Expected no space between opening and closing brace';
+                $fix = $phpcsFile->addFixableError($error, $scopeEnd, 'ContentBefore');
+                if ($fix === true) {
+                    $phpcsFile->fixer->replaceToken($whitespaceBetween, '');
+                }
+            }
+
+            return;
+        }
+
         if ($tokens[$lastContent]['line'] === $tokens[$scopeEnd]['line']
             || ($tokens[$lineStart]['code'] === T_INLINE_HTML
             && trim($tokens[$lineStart]['content']) !== '')
