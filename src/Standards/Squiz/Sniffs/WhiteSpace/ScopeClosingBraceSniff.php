@@ -71,6 +71,12 @@ class ScopeClosingBraceSniff implements Sniff
             || ($tokens[$lineStart]['code'] === T_INLINE_HTML
             && trim($tokens[$lineStart]['content']) !== '')
         ) {
+            // Allow closing and opening brace on the same line in constructors
+            if ($tokens[$stackPtr]['code'] === T_FUNCTION 
+                && $phpcsFile->getDeclarationName($stackPtr) === '__construct'
+            ) {
+                return;
+            } 
             $error = 'Closing brace must be on a line by itself';
             $fix   = $phpcsFile->addFixableError($error, $scopeEnd, 'ContentBefore');
             if ($fix === true) {
