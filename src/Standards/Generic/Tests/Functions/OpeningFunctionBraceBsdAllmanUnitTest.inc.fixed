@@ -27,6 +27,10 @@ function myFunction()
 
 class myClass
 {
+    // Good.
+    function __construct() {}
+
+
     // Brace should be on new line.
     function myFunction()
     {
