@@ -96,11 +96,16 @@ class OpeningFunctionBraceBsdAllmanSniff implements Sniff
         }
 
         if ($lineDifference === 0) {
-            // Check if function is the constructor
+            // Ignore constructors with empty function body
             if ($tokens[$stackPtr]['code'] === T_FUNCTION 
                 && $phpcsFile->getDeclarationName($stackPtr) === '__construct'
             ) {
-                return;
+                $closingBrace = $tokens[$stackPtr]['scope_closer'];
+                $lastContent = $phpcsFile->findPrevious([T_WHITESPACE], ($closingBrace - 1), $openingBrace, true);
+
+                if ($lastContent === $openingBrace) {
+                    return;
+                }
             }
 
             $error = 'Opening brace should be on a new line';
