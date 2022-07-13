@@ -73,6 +73,7 @@ class OpeningFunctionBraceBsdAllmanSniff implements Sniff
 
         $openingBrace = $tokens[$stackPtr]['scope_opener'];
         $closeBracket = $tokens[$stackPtr]['parenthesis_closer'];
+
         if ($tokens[$stackPtr]['code'] === T_CLOSURE) {
             $use = $phpcsFile->findNext(T_USE, ($closeBracket + 1), $tokens[$stackPtr]['scope_opener']);
             if ($use !== false) {
@@ -95,6 +96,13 @@ class OpeningFunctionBraceBsdAllmanSniff implements Sniff
         }
 
         if ($lineDifference === 0) {
+            // Check if function is the constructor
+            if ($tokens[$stackPtr]['code'] === T_FUNCTION 
+                && $phpcsFile->getDeclarationName($stackPtr) === '__construct'
+            ) {
+                return;
+            }
+
             $error = 'Opening brace should be on a new line';
             $fix   = $phpcsFile->addFixableError($error, $openingBrace, 'BraceOnSameLine');
             if ($fix === true) {
